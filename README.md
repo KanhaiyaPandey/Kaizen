@@ -1,6 +1,6 @@
 <div align="center">
   <p>
-    <img src="./docs/assets/logo-placeholder.png" alt="Kaizen logo placeholder" width="96" />
+   <img width="1024" height="1024" alt="kizen logo" src="https://github.com/user-attachments/assets/111b3874-39fd-44f6-95b7-73bc304069cd" />
   </p>
   <h1>Kaizen - AI Open Source Contributor Assistant</h1>
   <p><strong>Understand codebases faster. Discover beginner-friendly issues. Contribute with confidence.</strong></p>
