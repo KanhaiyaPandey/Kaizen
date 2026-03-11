@@ -1,11 +1,44 @@
-import { Queue } from "bullmq";
+import { Job, Queue, Worker } from "bullmq";
 import { redisConnectionOptions } from "../connection.js";
 
-let analysisQueue: Queue<{ repositoryId: string }> | undefined;
+export interface AnalysisRepositoryPayload {
+  id: number;
+  name: string;
+  fullName: string;
+  owner: string;
+  description: string | null;
+  defaultBranch: string;
+  primaryLanguage: string | null;
+  openIssuesCount: number;
+  htmlUrl: string;
+}
+
+export interface AnalysisIssuePayload {
+  id: number;
+  number: number;
+  title: string;
+  body: string;
+  htmlUrl: string;
+  state: string;
+  labels: string[];
+}
+
+export interface AnalysisJobPayload {
+  owner: string;
+  repo: string;
+  repoUrl: string;
+  queueJobId?: string;
+  repository: AnalysisRepositoryPayload;
+  readme: string;
+  issues: AnalysisIssuePayload[];
+}
+
+let analysisQueue: Queue<AnalysisJobPayload> | undefined;
+let analysisWorker: Worker<AnalysisJobPayload> | undefined;
 
 export function getAnalysisQueue() {
   if (!analysisQueue) {
-    analysisQueue = new Queue("repository-analysis", {
+    analysisQueue = new Queue<AnalysisJobPayload>("repository-analysis", {
       connection: redisConnectionOptions,
       defaultJobOptions: {
         attempts: 3,
@@ -20,5 +53,19 @@ export function getAnalysisQueue() {
 
   return analysisQueue;
 }
+
+export function registerAnalysisWorker(
+  processor: (job: Job<AnalysisJobPayload>) => Promise<void>
+) {
+  if (!analysisWorker) {
+    analysisWorker = new Worker<AnalysisJobPayload>("repository-analysis", processor, {
+      connection: redisConnectionOptions
+    });
+  }
+
+  return analysisWorker;
+}
+
+export type AnalysisJob = Job<AnalysisJobPayload>;
 
 export { analysisQueue };

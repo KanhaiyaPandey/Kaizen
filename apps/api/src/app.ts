@@ -1,6 +1,7 @@
 import cors from "cors";
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import { env } from "./config/env.js";
+import { AppError } from "./lib/errors.js";
 import { analysesRouter } from "./routes/analyses.js";
 import { authRouter } from "./routes/auth.js";
 import { healthRouter } from "./routes/health.js";
@@ -23,6 +24,16 @@ export function createApp() {
   app.use("/auth", authRouter);
   app.use("/repositories", repositoriesRouter);
   app.use("/analyses", analysesRouter);
+
+  app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    const appError =
+      error instanceof AppError ? error : new AppError("Internal server error", 500, error);
+
+    res.status(appError.statusCode).json({
+      error: appError.message,
+      details: appError.details
+    });
+  });
 
   return app;
 }

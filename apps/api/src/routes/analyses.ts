@@ -1,16 +1,25 @@
 import { Router } from "express";
-import { getAnalysisQueue } from "@acme/queue";
+import { analyses, db, eq } from "@acme/db";
 
 export const analysesRouter = Router();
 
-analysesRouter.post("/", async (req, res) => {
-  const repositoryId = req.body?.repositoryId as string | undefined;
+analysesRouter.get("/:id", async (req, res) => {
+  const analysisId = req.params.id;
+  const rows = await db.select().from(analyses).where(eq(analyses.id, analysisId)).limit(1);
 
-  if (!repositoryId) {
-    return res.status(400).json({ error: "repositoryId is required" });
+  if (rows[0]) {
+    return res.json(rows[0]);
   }
 
-  const job = await getAnalysisQueue().add("repository-analysis", { repositoryId });
+  const queuedRows = await db
+    .select()
+    .from(analyses)
+    .where(eq(analyses.queueJobId, analysisId))
+    .limit(1);
 
-  return res.status(202).json({ jobId: job.id, status: "queued" });
+  if (!queuedRows[0]) {
+    return res.status(404).json({ error: "Analysis not found" });
+  }
+
+  return res.json(queuedRows[0]);
 });
