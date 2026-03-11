@@ -118,7 +118,6 @@ High-level package layout:
 │       └── ci.yml
 ├── apps
 │   ├── api
-│   │   ├── .env.example
 │   │   ├── package.json
 │   │   ├── src
 │   │   │   ├── app.ts
@@ -140,7 +139,6 @@ High-level package layout:
 │   │   ├── tsconfig.json
 │   │   └── vitest.config.ts
 │   └── web
-│       ├── .env.example
 │       ├── app
 │       │   ├── globals.css
 │       │   ├── layout.tsx
@@ -166,7 +164,7 @@ High-level package layout:
 │   │   │   ├── 0000_initial.sql
 │   │   │   └── meta
 │   │   │       └── _journal.json
-│   │   ├── drizzle.config.ts
+│   │   ├── drizzle.config.cjs
 │   │   ├── package.json
 │   │   ├── src
 │   │   │   ├── client.ts
