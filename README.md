@@ -5,25 +5,24 @@
   <h1>Kaizen - AI Open Source Contributor Assistant</h1>
   <p><strong>Understand codebases faster. Discover beginner-friendly issues. Contribute with confidence.</strong></p>
   <p>
-    <a href="https://github.com/OWNER/REPO/actions/workflows/ci.yml">
-      <img src="https://img.shields.io/github/actions/workflow/status/OWNER/REPO/ci.yml?branch=main&label=ci&style=flat-square" alt="CI status" />
+    <a href="https://github.com/KanhaiyaPandey/Kaizen/actions/workflows/ci.yml">
+      <img src="https://img.shields.io/github/actions/workflow/status/KanhaiyaPandey/Kaizen/ci.yml?branch=main&label=ci&style=flat-square" alt="CI status" />
     </a>
-    <a href="https://github.com/OWNER/REPO/blob/main/LICENSE">
-      <img src="https://img.shields.io/github/license/OWNER/REPO?style=flat-square" alt="License" />
+    <a href="https://github.com/KanhaiyaPandey/Kaizen/blob/main/LICENSE">
+      <img src="https://img.shields.io/github/license/KanhaiyaPandey/Kaizen?style=flat-square" alt="License" />
     </a>
-    <a href="https://github.com/OWNER/REPO/issues">
-      <img src="https://img.shields.io/github/issues/OWNER/REPO?style=flat-square" alt="Open issues" />
+    <a href="https://github.com/KanhaiyaPandey/Kaizen/issues">
+      <img src="https://img.shields.io/github/issues/KanhaiyaPandey/Kaizen?style=flat-square" alt="Open issues" />
     </a>
-    <a href="https://github.com/OWNER/REPO/pulls">
-      <img src="https://img.shields.io/github/issues-pr/OWNER/REPO?style=flat-square" alt="Open pull requests" />
+    <a href="https://github.com/KanhaiyaPandey/Kaizen/pulls">
+      <img src="https://img.shields.io/github/issues-pr/KanhaiyaPandey/Kaizen?style=flat-square" alt="Open pull requests" />
     </a>
-    <a href="https://github.com/OWNER/REPO/graphs/contributors">
-      <img src="https://img.shields.io/github/contributors/OWNER/REPO?style=flat-square" alt="Contributors" />
+    <a href="https://github.com/KanhaiyaPandey/Kaizen/graphs/contributors">
+      <img src="https://img.shields.io/github/contributors/KanhaiyaPandey/Kaizen?style=flat-square" alt="Contributors" />
     </a>
   </p>
 </div>
 
-> Replace `OWNER/REPO` in the badge URLs once the repository is published. Replace the logo path with your actual project asset when available.
 
 ## Landing
 
