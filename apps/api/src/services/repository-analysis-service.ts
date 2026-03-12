@@ -6,7 +6,7 @@ import {
   users
 } from "@acme/db";
 import type { AnalysisJobPayload } from "@acme/queue";
-import { AppError } from "../lib/errors.js";
+import { AppError, serializeError } from "../lib/errors.js";
 import { analyzeRepository } from "./analysis-service.js";
 import { getIssues, getReadme, getRepository } from "./github-service.js";
 
@@ -158,13 +158,16 @@ export async function processRepositoryAnalysisJob(jobData: AnalysisJobPayload) 
 
     return updatedAnalysis;
   } catch (error) {
+    const serializedError = serializeError(error);
+
     await db
       .update(analyses)
       .set({
         status: "failed",
         metadata: {
           repoUrl: jobData.repoUrl,
-          error: error instanceof Error ? error.message : "Unknown analysis failure"
+          error: error instanceof Error ? error.message : "Unknown analysis failure",
+          errorDetails: serializedError
         },
         updatedAt: new Date()
       })

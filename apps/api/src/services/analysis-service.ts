@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { env } from "../config/env.js";
-import { AppError } from "../lib/errors.js";
+import { AppError, serializeError } from "../lib/errors.js";
 import type { GitHubIssue } from "./github-service.js";
 
 const openai = new OpenAI({
@@ -21,11 +21,23 @@ export interface RepositoryAnalysisResult {
   contributionAreas: string[];
 }
 
+function buildFallbackAnalysis(data: RepositoryAnalysisInput): RepositoryAnalysisResult {
+  return {
+    summary: `Repository ${data.repoName} appears to be an open source project.`,
+    architecture: "Architecture analysis unavailable due to AI quota.",
+    setupGuide: "Check the repository README for setup instructions.",
+    contributionAreas: ["Review open issues", "Improve documentation"]
+  };
+}
+
 function parseJsonObject(content: string): RepositoryAnalysisResult {
   try {
     return JSON.parse(content) as RepositoryAnalysisResult;
   } catch (error) {
-    throw new AppError("OpenAI returned invalid JSON", 502, error);
+    throw new AppError("OpenAI returned invalid JSON", 502, {
+      rawContent: content,
+      cause: serializeError(error)
+    });
   }
 }
 
@@ -56,7 +68,10 @@ export async function analyzeRepository(
     const content = completion.choices[0]?.message?.content;
 
     if (!content) {
-      throw new AppError("OpenAI returned an empty response", 502);
+      throw new AppError("OpenAI returned an empty response", 502, {
+        completionId: completion.id,
+        finishReason: completion.choices[0]?.finish_reason ?? null
+      });
     }
 
     const parsed = parseJsonObject(content);
@@ -68,10 +83,7 @@ export async function analyzeRepository(
       contributionAreas: parsed.contributionAreas ?? []
     };
   } catch (error) {
-    if (error instanceof AppError) {
-      throw error;
-    }
-
-    throw new AppError("OpenAI analysis failed", 502, error);
+    console.warn("OpenAI analysis failed, returning fallback response", serializeError(error));
+    return buildFallbackAnalysis(data);
   }
 }
