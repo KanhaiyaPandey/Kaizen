@@ -14,21 +14,27 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
         <p className="mb-3 text-sm font-semibold tracking-[0.18em] text-[var(--muted)] uppercase">
           Project Summary
         </p>
-        <p className="text-base leading-7 text-[var(--foreground)]">{analysis.summary}</p>
+        <p className="text-base leading-7 text-[var(--foreground)]">
+          {analysis.summary ?? "Summary is not available yet."}
+        </p>
       </section>
 
       <section className={sectionClasses}>
         <p className="mb-3 text-sm font-semibold tracking-[0.18em] text-[var(--muted)] uppercase">
           Architecture Overview
         </p>
-        <p className="text-base leading-7 text-[var(--foreground)]">{analysis.architecture}</p>
+        <p className="text-base leading-7 text-[var(--foreground)]">
+          {analysis.architecture ?? "Architecture details are not available yet."}
+        </p>
       </section>
 
       <section className={sectionClasses}>
         <p className="mb-3 text-sm font-semibold tracking-[0.18em] text-[var(--muted)] uppercase">
           Setup Instructions
         </p>
-        <p className="text-base leading-7 text-[var(--foreground)]">{analysis.setupGuide}</p>
+        <p className="text-base leading-7 text-[var(--foreground)]">
+          {analysis.setupGuide ?? "Setup instructions are not available yet."}
+        </p>
       </section>
 
       <section className={sectionClasses}>

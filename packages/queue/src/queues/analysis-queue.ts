@@ -24,10 +24,11 @@ export interface AnalysisIssuePayload {
 }
 
 export interface AnalysisJobPayload {
+  analysisId: string;
+  repositoryId: string;
   owner: string;
   repo: string;
   repoUrl: string;
-  queueJobId?: string;
   repository: AnalysisRepositoryPayload;
   readme: string;
   issues: AnalysisIssuePayload[];

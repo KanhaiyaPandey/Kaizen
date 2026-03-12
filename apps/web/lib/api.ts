@@ -1,16 +1,16 @@
 export type AnalysisStatus = "queued" | "processing" | "completed" | "failed";
 
 export interface AnalyzeResponse {
-  jobId: string;
+  analysisId: string;
   status: "queued";
 }
 
 export interface RepositoryAnalysis {
   id: string;
   status: AnalysisStatus;
-  summary: string;
-  architecture: string;
-  setupGuide: string;
+  summary: string | null;
+  architecture: string | null;
+  setupGuide: string | null;
   contributionAreas: string[];
 }
 

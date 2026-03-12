@@ -1,15 +1,29 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { analyzeRepositoryHandler } from "../routes/repositories.js";
 
-const { queueAddMock, prepareRepositoryAnalysisJobMock } = vi.hoisted(() => ({
+const { queueAddMock, prepareRepositoryAnalysisJobMock, dbUpdateMock, eqMock } = vi.hoisted(() => ({
   queueAddMock: vi.fn(),
-  prepareRepositoryAnalysisJobMock: vi.fn()
+  prepareRepositoryAnalysisJobMock: vi.fn(),
+  dbUpdateMock: vi.fn(),
+  eqMock: vi.fn()
 }));
 
 vi.mock("@acme/queue", () => ({
   getAnalysisQueue: () => ({
     add: queueAddMock
   })
+}));
+
+vi.mock("@acme/db", () => ({
+  analyses: {
+    id: "id"
+  },
+  db: {
+    update: dbUpdateMock
+  },
+  desc: vi.fn(),
+  eq: eqMock,
+  repositories: {}
 }));
 
 vi.mock("../services/repository-analysis-service.js", () => ({
@@ -20,10 +34,21 @@ describe("repository analyze endpoint", () => {
   beforeEach(() => {
     queueAddMock.mockReset();
     prepareRepositoryAnalysisJobMock.mockReset();
+    dbUpdateMock.mockReset();
+    eqMock.mockReset();
+
+    eqMock.mockReturnValue("eq-condition");
+    dbUpdateMock.mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined)
+      })
+    });
   });
 
   it("queues an analysis job for a valid repository URL", async () => {
     prepareRepositoryAnalysisJobMock.mockResolvedValue({
+      analysisId: "analysis-123",
+      repositoryId: "repository-123",
       owner: "openai",
       repo: "openai-node",
       repoUrl: "https://github.com/openai/openai-node",
@@ -43,8 +68,9 @@ describe("repository analyze endpoint", () => {
     });
     queueAddMock.mockResolvedValue({ id: "job-123" });
 
+    const statusJsonSpy = vi.fn();
     const statusSpy = vi.fn().mockReturnValue({
-      json: vi.fn()
+      json: statusJsonSpy
     });
     const jsonSpy = vi.fn();
 
@@ -66,11 +92,16 @@ describe("repository analyze endpoint", () => {
     expect(queueAddMock).toHaveBeenCalledWith(
       "repository-analysis",
       expect.objectContaining({
+        analysisId: "analysis-123",
         owner: "openai",
         repo: "openai-node"
       })
     );
     expect(statusSpy).toHaveBeenCalledWith(202);
+    expect(statusJsonSpy).toHaveBeenCalledWith({
+      analysisId: "analysis-123",
+      status: "queued"
+    });
   });
 
   it("rejects requests without repoUrl", async () => {

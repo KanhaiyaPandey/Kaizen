@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { db, desc, repositories } from "@acme/db";
+import { analyses, db, desc, eq, repositories } from "@acme/db";
 import { getAnalysisQueue } from "@acme/queue";
-import { AppError } from "../lib/errors.js";
+import { AppError, serializeError } from "../lib/errors.js";
 import { prepareRepositoryAnalysisJob } from "../services/repository-analysis-service.js";
 
 export const repositoriesRouter = Router();
@@ -30,11 +30,32 @@ export async function analyzeRepositoryHandler(
     const queue = getAnalysisQueue();
     const job = await queue.add("repository-analysis", payload);
 
+    await db
+      .update(analyses)
+      .set({
+        queueJobId: String(job.id),
+        updatedAt: new Date()
+      })
+      .where(eq(analyses.id, payload.analysisId));
+
     return res.status(202).json({
-      jobId: job.id,
+      analysisId: payload.analysisId,
       status: "queued"
     });
   } catch (error) {
+    await db
+      .update(analyses)
+      .set({
+        status: "failed",
+        metadata: {
+          repoUrl,
+          error: "Failed to queue repository analysis",
+          errorDetails: serializeError(error)
+        },
+        updatedAt: new Date()
+      })
+      .where(eq(analyses.id, payload.analysisId));
+
     throw new AppError("Failed to queue repository analysis", 500, error);
   }
 }

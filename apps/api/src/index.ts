@@ -13,10 +13,7 @@ dotenv.config({
 const app = createApp();
 
 registerAnalysisWorker(async (job: AnalysisJob) => {
-  await processRepositoryAnalysisJob({
-    ...job.data,
-    queueJobId: String(job.id)
-  });
+  await processRepositoryAnalysisJob(job.data);
 });
 
 app.listen(env.API_PORT, () => {

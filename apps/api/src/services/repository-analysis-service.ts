@@ -57,7 +57,9 @@ async function getOrCreateSystemUser() {
   return createdUser;
 }
 
-async function upsertRepositoryRecord(payload: AnalysisJobPayload) {
+type RepositoryRecordInput = Pick<AnalysisJobPayload, "repository">;
+
+async function upsertRepositoryRecord(payload: RepositoryRecordInput) {
   const existingRepository = await db
     .select()
     .from(repositories)
@@ -104,8 +106,21 @@ export async function prepareRepositoryAnalysisJob(repoUrl: string): Promise<Ana
     getReadme(owner, repo),
     getIssues(owner, repo)
   ]);
+  const repositoryRecord = await upsertRepositoryRecord({ repository });
+  const [analysis] = await db
+    .insert(analyses)
+    .values({
+      repositoryId: repositoryRecord.id,
+      status: "queued",
+      metadata: {
+        repoUrl
+      }
+    })
+    .returning();
 
   return {
+    analysisId: analysis.id,
+    repositoryId: repositoryRecord.id,
     owner,
     repo,
     repoUrl,
@@ -116,19 +131,23 @@ export async function prepareRepositoryAnalysisJob(repoUrl: string): Promise<Ana
 }
 
 export async function processRepositoryAnalysisJob(jobData: AnalysisJobPayload) {
-  const repositoryRecord = await upsertRepositoryRecord(jobData);
-
-  const [createdAnalysis] = await db
-    .insert(analyses)
-    .values({
-      repositoryId: repositoryRecord.id,
-      queueJobId: jobData.queueJobId,
+  const [processingAnalysis] = await db
+    .update(analyses)
+    .set({
       status: "processing",
       metadata: {
         repoUrl: jobData.repoUrl
-      }
+      },
+      updatedAt: new Date()
     })
+    .where(eq(analyses.id, jobData.analysisId))
     .returning();
+
+  if (!processingAnalysis) {
+    throw new AppError("Analysis record not found", 404, {
+      analysisId: jobData.analysisId
+    });
+  }
 
   try {
     const result = await analyzeRepository({
@@ -153,7 +172,7 @@ export async function processRepositoryAnalysisJob(jobData: AnalysisJobPayload) 
         },
         updatedAt: new Date()
       })
-      .where(eq(analyses.id, createdAnalysis.id))
+      .where(eq(analyses.id, jobData.analysisId))
       .returning();
 
     return updatedAnalysis;
@@ -171,7 +190,7 @@ export async function processRepositoryAnalysisJob(jobData: AnalysisJobPayload) 
         },
         updatedAt: new Date()
       })
-      .where(eq(analyses.id, createdAnalysis.id));
+      .where(eq(analyses.id, jobData.analysisId));
 
     throw error;
   }

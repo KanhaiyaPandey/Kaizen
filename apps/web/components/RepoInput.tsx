@@ -24,7 +24,7 @@ export function RepoInput() {
     startTransition(async () => {
       try {
         const result = await analyzeRepository(repoUrl.trim());
-        router.push(`/analysis/${result.jobId}`);
+        router.push(`/analysis/${result.analysisId}`);
       } catch (submitError) {
         setError(
           submitError instanceof Error
